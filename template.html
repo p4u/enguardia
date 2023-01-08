@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter List</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Chapter List</h1>
+    <form id="search-form">
+      <label for="search-term">Search:</label>
+      <input type="text" id="search-term" name="search-term">
+      <select id="search-by" name="search-by">
+        <option value="title">Title</option>
+        <option value="description">Description</option>
+      </select>
+      <button type="submit">Search</button>
+    </form>
+    <div class="chapters">
+      {{range .}}
+        <div class="chapter">
+          <img src="{{.Image}}" alt="Chapter image">
+          <div class="chapter-info">
+            <h2 class="chapter-title">{{.Title}}</h2>
+            <p class="chapter-description">{{.Description}}</p>
+            <a href="/files/{{.File}}" class="chapter-link">Listen to chapter</a>
+          </div>
+        </div>
+      {{end}}
+    </div>
+  </div>
+  <script src="/static/main.js"></script>
+</body>
+</html>

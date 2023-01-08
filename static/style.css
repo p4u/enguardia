@@ -1,0 +1,113 @@
+body {
+  background-color: #eee;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  width: 80%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin: 20px 0;
+}
+
+.chapters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-gap: 20px;
+}
+
+.chapter {
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.chapter:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+
+.chapter img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.chapter-info {
+  padding: 20px;
+}
+
+.chapter-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.chapter-description {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.chapter-link {
+  display: block;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  text-decoration: none;
+}
+
+form#search-form {
+  display: flex;
+  align-items: center;
+  background-color: #333;
+  padding: 10px;
+}
+
+form#search-form label {
+  color: #fff;
+  margin-right: 10px;
+}
+
+form#search-form input, form#search-form select {
+  font-size: 1em;
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+form#search-form button {
+  font-size: 1em;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #333;
+  color: #fff;
+}
+
+form#search-form button:hover {
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  form#search-form {
+    flex-wrap: wrap;
+  }
+  form#search-form label, form#search-form input, form#search-form select, form#search-form button {
+    width: 100%;
+  }
+  form#search-form input, form#search-form select {
+    margin-bottom: 10px;
+  }
+}
