@@ -1,6 +1,11 @@
-version: '3'
+version: '3.8'
 services:
-  app:
+  enguardia:
     build: .
     ports:
       - "8080:8080"
+    volumes:
+      - "./data:/data"
+    command:
+      - "-dataDir=/data"
+      - "-pages=68"

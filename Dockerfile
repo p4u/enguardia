@@ -1,12 +1,7 @@
 FROM golang:latest
 
-COPY . /app
+WORKDIR /src
+COPY . .
+RUN go build -o=enguardia.bin -ldflags="-s -w"
 
-WORKDIR /app
-
-RUN go get -d -v ./...
-RUN go install -v ./...
-
-EXPOSE 8080
-
-CMD ["app"]
+ENTRYPOINT ["/src/enguardia.bin"]

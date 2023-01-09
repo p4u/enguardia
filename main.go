@@ -23,7 +23,7 @@ import (
 const (
 	enGuardiaURL = "https://www.ccma.cat/catradio/alacarta/en-guardia/ultims-programes/?pagina="
 	URLprefix    = "https://www.ccma.cat"
-	TotalPages   = 66
+	TotalPages   = 68
 	DataDir      = "capitols"
 )
 
@@ -37,17 +37,21 @@ type Chapter struct {
 }
 
 func main() {
-	action := flag.String("action", "scrap or serve", "scrap or serve")
+	action := flag.String("action", "all", "all, scrap or serve")
 	dataDir := flag.String("dataDir", DataDir, "data directory")
+	pages := flag.Int("pages", TotalPages, "number of pages to scrap")
 	flag.Parse()
 
-	if err := os.MkdirAll(DataDir, 0o755); err != nil {
+	if err := os.MkdirAll(*dataDir, 0o755); err != nil {
 		panic(err)
 	}
 	switch *action {
 	case "scrap":
-		scrap()
-	case "serve":
+		scrap(*dataDir, *pages)
+	case "serve", "all":
+		if *action == "all" {
+			scrap(*dataDir, *pages)
+		}
 		chapters, err := readChapters(*dataDir)
 		if err != nil {
 			log.Fatal(err)
@@ -77,7 +81,7 @@ func readChapters(dir string) ([]Chapter, error) {
 
 		var chapter Chapter
 		if err := json.Unmarshal(data, &chapter); err != nil {
-			log.Printf("cannot unmarshal json file %s: %v", path, err)
+			log.Printf("cannot unmarshal json file %s: %v\n", path, err)
 			return nil
 		}
 
@@ -150,7 +154,7 @@ func serveWebPage(chapters []Chapter, dataDir string) error {
 	return http.ListenAndServe(":8080", nil)
 }
 
-func scrap() {
+func scrap(dataDir string, pages int) {
 	c := colly.NewCollector()
 
 	data := []Chapter{}
@@ -162,12 +166,13 @@ func scrap() {
 			// Build fileName from fullPath
 			fileURL, err := url.Parse(data[index].Link)
 			if err != nil {
-				log.Fatal(err)
+				log.Printf("error: file name cannot be extracted: %v\n", err)
+				return
 			}
 			path := fileURL.Path
 			segments := strings.Split(path, "/")
 			if len(segments) == 0 {
-				log.Println("file name cannot be extracted")
+				log.Println("error: file name cannot be extracted")
 				return
 			}
 			data[index].File = segments[len(segments)-1]
@@ -201,19 +206,20 @@ func scrap() {
 		})
 	})
 
-	for page := 1; page <= TotalPages; page++ {
+	for page := 1; page <= pages; page++ {
 		log.Printf("Page %d of %d\n", page, TotalPages)
 		capitols = []capitol{}
 		if err := c2.Visit(fmt.Sprintf("%s%d", enGuardiaURL, page)); err != nil {
-			panic(err)
+			log.Printf("error: could not scrap page %d %v\n", page, err)
+			continue
 		}
 		for i, cap := range capitols {
 			log.Printf("[%d/%d] scrapping %s\n", i, len(capitols), cap.link)
 			data = append(data, Chapter{Image: cap.image})
 			if err := c.Visit(cap.link); err != nil {
-				log.Printf("error: %v", err)
+				log.Printf("error: %v\n", err)
 			}
-			saveCapitol(data[index], DataDir)
+			saveCapitol(data[index], dataDir)
 			index++
 		}
 	}
@@ -231,8 +237,8 @@ func saveCapitol(data Chapter, dataDir string) {
 }
 
 func download(link, fileName string) {
-	_, err := os.Stat(fileName)
-	if err == nil {
+	inf, err := os.Stat(fileName)
+	if err == nil && inf.Size() > 0 {
 		log.Printf("file %s already exist, skipping\n", fileName)
 		return
 	}
@@ -251,12 +257,15 @@ func download(link, fileName string) {
 	// Put content on file
 	resp, err := client.Get(link)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("error downloading file %s: %v\n", fileName, err)
+		return
 	}
 	defer resp.Body.Close()
-
 	size, err := io.Copy(file, resp.Body)
-
+	if err != nil {
+		log.Printf("error copying file %s: %v\n", fileName, err)
+		return
+	}
 	defer file.Close()
 
 	fmt.Printf("=> Downloaded file %s with size %d\n", fileName, size)
