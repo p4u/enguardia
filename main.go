@@ -218,6 +218,7 @@ func scrap(dataDir string, pages int) {
 			data = append(data, Chapter{Image: cap.image})
 			if err := c.Visit(cap.link); err != nil {
 				log.Printf("error: %v\n", err)
+				continue
 			}
 			saveCapitol(data[index], dataDir)
 			index++
